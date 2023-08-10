@@ -1,0 +1,29 @@
+---
+authors:
+  - Tom Page @Tompage1994
+  - Chris Renwick @crenwick93
+dependencies: {}
+description: Ansible content that interacts with the Ansible Automation Hub or Galaxy NG API.
+documentation: https://github.com/ansible/galaxy_collection/blob/devel/README.md
+license:
+  - GPL-3.0-only
+namespace: infra
+name: eda_configuration
+version: 0.0.1-devel
+readme: README.md
+repository: https://github.com/ansible/galaxy_collection
+issues: https://github.com/ansible/galaxy_collection/issues
+tags:
+  - cloud
+  - infrastructure
+  - galaxy
+  - ansible
+  - galaxy
+  - automation
+build_ignore:
+  - tools
+  - setup.cfg
+  - galaxy.yml.j2
+  - template_galaxy.yml
+  - '*.tar.gz'
+...
