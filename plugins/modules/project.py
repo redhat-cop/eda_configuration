@@ -38,11 +38,12 @@ options:
         - The description of the project.
       required: False
       type: str
-    scm_url:
+    url:
       description:
         - A URL to a remote archive, such as a Github Release or a build artifact stored in Artifactory and unpacks it into the project path for use.
       required: True
       type: str
+      aliases: ['scm_url']
     credential:
       description:
         - The token needed to utilize the SCM URL.
@@ -64,9 +65,12 @@ EXAMPLES = """
   infra.eda_configuration.project:
     name: my_project
     description: my awesome project
-    scm_url: https://github.com/ansible/ansible-rulebook.git
+    url: https://github.com/ansible/ansible-rulebook.git
     credential: test_token
     state: present
+    eda_host: eda.example.com
+    eda_username: admin
+    eda_password: Sup3r53cr3t
 
 """
 
@@ -79,7 +83,7 @@ def main():
         name=dict(required=True),
         new_name=dict(),
         description=dict(),
-        scm_url=dict(required=True),
+        url=dict(required=True, aliases=["scm_url"]),
         credential=dict(),
         state=dict(choices=["present", "absent"], default="present"),
     )
@@ -95,11 +99,11 @@ def main():
     new_fields = {}
 
     # Attempt to look up an existing item based on the provided data
-    existing_item = module.get_one("projects", name_or_id=name)
+    existing_item = module.get_one("projects", name_or_id=name, key="req_url")
 
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
-        module.delete_if_needed(existing_item)
+        module.delete_if_needed(existing_item, key="req_url")
 
     # Create the data that gets sent for create and update
     # Remove these two comments for final
@@ -107,13 +111,13 @@ def main():
     new_fields["name"] = new_name if new_name else (module.get_item_name(existing_item) if existing_item else name)
     for field_name in (
         "description",
-        "scm_url",
+        "url",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:
             new_fields[field_name] = field_val
 
-    new_fields["credential_id"] = module.resolve_name_to_id("credential", module.params.get("credential"))
+    new_fields["credential_id"] = module.resolve_name_to_id("credentials", module.params.get("credential"))
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
@@ -121,6 +125,7 @@ def main():
         new_fields,
         endpoint="projects",
         item_type="projects",
+        key="req_url",
     )
 
 

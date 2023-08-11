@@ -257,7 +257,7 @@ class EDAModule(AnsibleModule):
             # A 405 means we used a method that isn't allowed. Usually this is a bad request, but it requires special treatment because the
             # API sends it as a logic error in a few situations (e.g. trying to cancel a job that isn't running).
             elif he.code == 405:
-                self.fail_json(msg="The EDA Controller server says you can't make a request with the {0} method to this endpoing {1}".format(method, url.path))
+                self.fail_json(msg="The EDA Controller server says you can't make a request with the {0} method to this endpoint {1}".format(method, url.path))
             # Sanity check: Did we get some other kind of error?  If so, write an appropriate error message.
             elif he.code >= 400:
                 # We are going to return a 400 so the module can decide what to do with it
@@ -294,7 +294,7 @@ class EDAModule(AnsibleModule):
             status_code = response.status
         return {"status_code": status_code, "json": response_json}
 
-    def get_one(self, endpoint, name_or_id=None, allow_none=True, **kwargs):
+    def get_one(self, endpoint, name_or_id=None, allow_none=True, key="url", **kwargs):
         new_kwargs = kwargs.copy()
         if name_or_id:
             name_field = self.get_name_field_from_endpoint(endpoint)
@@ -317,26 +317,26 @@ class EDAModule(AnsibleModule):
                 fail_msg += ", detail: {0}".format(response["json"]["detail"])
             self.fail_json(msg=fail_msg)
 
-        if "count" not in response["json"]["meta"] or "data" not in response["json"]:
+        if "count" not in response["json"] or "results" not in response["json"]:
             self.fail_json(msg="The endpoint did not provide count and results.")
 
-        if response["json"]["meta"]["count"] == 0:
+        if response["json"]["count"] == 0:
             if allow_none:
                 return None
             else:
                 self.fail_wanted_one(response, endpoint, new_kwargs.get("data"))
-        elif response["json"]["meta"]["count"] > 1:
+        elif response["json"]["count"] > 1:
             if name_or_id:
                 # Since we did a name or ID search and got > 1 return something if the id matches
-                for asset in response["json"]["data"]:
+                for asset in response["json"]["results"]:
                     if str(asset["id"]) == name_or_id:
-                        return self.existing_item_add_url(asset, endpoint)
+                        return self.existing_item_add_url(asset, endpoint, key=key)
 
             # We got > 1 and either didn't find something by ID (which means multiple names)
             # Or we weren't running with a or search and just got back too many to begin with.
             self.fail_wanted_one(response, endpoint, new_kwargs.get("data"))
 
-        return self.existing_item_add_url(response["json"]["data"][0], endpoint)
+        return self.existing_item_add_url(response["json"]["results"][0], endpoint, key=key)
 
     def get_only(self, endpoint, name_or_id=None, allow_none=True, key="url", **kwargs):
         new_kwargs = kwargs.copy()
@@ -382,7 +382,7 @@ class EDAModule(AnsibleModule):
                         headers={"Content-Type": "application/json"},
                     )
                 except HTTPError:
-                    test_url = self.build_url("namespaces").geturl()
+                    test_url = self.build_url("projects").geturl()
                     self.basic_auth = True
                     basic_str = base64.b64encode("{0}:{1}".format(self.username, self.password).encode("ascii"))
                     response = self.session.open(
@@ -419,11 +419,11 @@ class EDAModule(AnsibleModule):
 
     def existing_item_add_url(self, existing_item, endpoint, key="url"):
         # Add url and type to response as its missing in current iteration of EDA Controller.
-        existing_item[key] = "{0}{1}/".format(self.build_url(endpoint).geturl()[len(self.host):], existing_item["name"])
+        existing_item[key] = "{0}{1}/".format(self.build_url(endpoint).geturl()[len(self.host):], existing_item["id"])
         existing_item["type"] = endpoint
         return existing_item
 
-    def delete_if_needed(self, existing_item, on_delete=None, auto_exit=True):
+    def delete_if_needed(self, existing_item, on_delete=None, auto_exit=True, key="url"):
         # This will exit from the module on its own.
         # If the method successfully deletes an item and on_delete param is defined,
         #   the on_delete parameter will be called as a method pasing in this object and the json from the response
@@ -437,7 +437,7 @@ class EDAModule(AnsibleModule):
             else:
                 # If we have an item, we can try to delete it
                 try:
-                    item_url = existing_item["url"]
+                    item_url = existing_item[key]
                     item_type = existing_item["type"]
                     item_id = existing_item["id"]
                     item_name = self.get_item_name(existing_item, allow_unknown=True)
@@ -509,16 +509,19 @@ class EDAModule(AnsibleModule):
         associations=None,
         require_id=True,
         fixed_url=None,
+        key="url",
     ):
         if existing_item:
             return self.update_if_needed(
                 existing_item,
                 new_item,
+                endpoint=endpoint,
                 on_update=on_update,
                 auto_exit=auto_exit,
                 associations=associations,
                 require_id=require_id,
                 fixed_url=fixed_url,
+                key=key,
             )
         else:
             return self.create_if_needed(
@@ -607,11 +610,13 @@ class EDAModule(AnsibleModule):
         self,
         existing_item,
         new_item,
+        endpoint,
         on_update=None,
         auto_exit=True,
         associations=None,
         require_id=True,
-        fixed_url=None,
+        fixed_url=None,  
+        key="url",
     ):
         # This will exit from the module on its own
         # If the method successfully updates an item and on_update param is defined,
@@ -624,10 +629,10 @@ class EDAModule(AnsibleModule):
         if existing_item:
             # If we have an item, we can see if it needs an update
             try:
-                item_url = fixed_url or existing_item["url"]
+                item_url = fixed_url or existing_item[key]
                 item_type = existing_item["type"]
                 item_name = existing_item["name"]
-                item_id = require_id and existing_item["id"]
+                item_id = require_id and existing_item["id"]      
             except KeyError as ke:
                 self.fail_json(msg="Unable to process update of item due to missing data {0}".format(ke))
 
@@ -639,7 +644,7 @@ class EDAModule(AnsibleModule):
             self.json_output["name"] = item_name
             self.json_output["type"] = item_type
             if needs_patch:
-                response = self.put_endpoint(item_url, **{"data": new_item})
+                response = self.patch_endpoint(item_url, **{"data": new_item})
                 if response["status_code"] == 200:
                     # compare apples-to-apples, old API data to new API data
                     # but do so considering the fields given in parameters
@@ -753,15 +758,15 @@ class EDAModule(AnsibleModule):
 
     def fail_wanted_one(self, response, endpoint, query_params):
         sample = response.copy()
-        if len(sample["json"]["data"]) > 1:
-            sample["json"]["data"] = sample["json"]["data"][:2] + ["...more results snipped..."]
+        if len(sample["json"]["results"]) > 1:
+            sample["json"]["results"] = sample["json"]["results"][:2] + ["...more results snipped..."]
         url = self.build_url(endpoint, query_params)
         display_endpoint = url.geturl()[len(self.host):]  # truncate to not include the base URL
         self.fail_json(
-            msg="Request to {0} returned {1} items, expected 1".format(display_endpoint, response["json"]["meta"]["count"]),
+            msg="Request to {0} returned {1} items, expected 1".format(display_endpoint, response["json"]["count"]),
             query=query_params,
             response=sample,
-            total_results=response["json"]["meta"]["count"],
+            total_results=response["json"]["count"],
         )
 
     def get_exactly_one(self, endpoint, name_or_id=None, **kwargs):
