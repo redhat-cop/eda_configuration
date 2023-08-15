@@ -66,7 +66,6 @@ class EDAModule(AnsibleModule):
         "password": "eda_password",
         "verify_ssl": "validate_certs",
         "request_timeout": "request_timeout",
-        "oauth_token": "eda_token",
     }
     IDENTITY_FIELDS = {}
     ENCRYPTED_STRING = "$encrypted$"
@@ -75,8 +74,7 @@ class EDAModule(AnsibleModule):
     password = None
     verify_ssl = True
     request_timeout = 10
-    oauth_token = None
-    basic_auth = False
+    basic_auth = True
     authenticated = False
     error_callback = None
     warn_callback = None
@@ -104,20 +102,6 @@ class EDAModule(AnsibleModule):
             direct_value = self.params.get(long_param)
             if direct_value is not None:
                 setattr(self, short_param, direct_value)
-
-        # Perform magic depending on whether eda_token is a string or a dict
-        if self.params.get("eda_token"):
-            token_param = self.params.get("eda_token")
-            if type(token_param) is dict:
-                if "token" in token_param:
-                    self.oauth_token = self.params.get("eda_token")["token"]
-                else:
-                    self.fail_json(msg="The provided dict in eda_token did not properly contain the token entry")
-            elif isinstance(token_param, string_types):
-                self.oauth_token = self.params.get("eda_token")
-            else:
-                error_msg = "The provided eda_token type was not valid ({0}). Valid options are str or dict.".format(type(token_param).__name__)
-                self.fail_json(msg=error_msg)
 
         # Perform some basic validation
         if not re.match("^https{0,1}://", self.host):
@@ -191,13 +175,9 @@ class EDAModule(AnsibleModule):
         headers = kwargs.get("headers", {})
 
         # Authenticate to EDA controller (if we don't have a token and if not already done so)
-        if not self.oauth_token and not self.authenticated:
-            # This method will set a cookie in the cookie jar for us and also an oauth_token
+        if not self.authenticated:
             self.authenticate(**kwargs)
-        if self.oauth_token:
-            # If we have a oauth token, we just use a bearer header
-            headers["Authorization"] = "Token {0}".format(self.oauth_token)
-        elif self.basic_auth:
+        if self.basic_auth:
             basic_str = base64.b64encode("{0}:{1}".format(self.username, self.password).encode("ascii"))
             headers["Authorization"] = "Basic {0}".format(basic_str.decode("ascii"))
         if method in ["POST", "PUT", "PATCH"]:
@@ -364,57 +344,13 @@ class EDAModule(AnsibleModule):
         return self.existing_item_add_url(response["json"], endpoint, key=key)
 
     def authenticate(self, **kwargs):
-        if self.username and self.password:
-            # Attempt to get a token from /v3/auth/token/ by giving it our username/password combo
-            # If we have a username and password, we need to get a session cookie
-            api_token_url = self.build_url("auth/token").geturl()
-            try:
-                try:
-                    response = self.session.open(
-                        "POST",
-                        api_token_url,
-                        validate_certs=self.verify_ssl,
-                        timeout=self.request_timeout,
-                        follow_redirects=True,
-                        force_basic_auth=True,
-                        url_username=self.username,
-                        url_password=self.password,
-                        headers={"Content-Type": "application/json"},
-                    )
-                except HTTPError:
-                    test_url = self.build_url("projects").geturl()
-                    self.basic_auth = True
-                    basic_str = base64.b64encode("{0}:{1}".format(self.username, self.password).encode("ascii"))
-                    response = self.session.open(
-                        "GET",
-                        test_url,
-                        validate_certs=self.verify_ssl,
-                        timeout=self.request_timeout,
-                        headers={
-                            "Content-Type": "application/json",
-                            "Authorization": "Basic {0}".format(basic_str.decode("ascii")),
-                        },
-                    )
-            except HTTPError as he:
-                try:
-                    resp = he.read()
-                except Exception as e:
-                    resp = "unknown {0}".format(e)
-                self.fail_json(msg="Failed to get token: {0}".format(he), response=resp)
-            except (Exception) as e:
-                # Sanity check: Did the server send back some kind of internal error?
-                self.fail_json(msg="Failed to get token: {0}".format(e))
+        # Attempt to get a token from /auth/session/login by giving it our username/password combo
+        # If we have a username and password, we need to get a session cookie
 
-            token_response = None
-            if not self.basic_auth:
-                try:
-                    token_response = response.read()
-                    response_json = loads(token_response)
-                    self.oauth_token = response_json["token"]
-                except (Exception) as e:
-                    self.fail_json(msg="Failed to extract token information from login response: {0}".format(e), **{"response": token_response})
+        # Currently not implemented
+        # api_token_url = self.build_url("auth/session/login").geturl()[:-1]
 
-        # If we have neither of these, then we can try un-authenticated access
+        # If we have not managed to authenticate of these, then we can try un-authenticated access or use basic auth
         self.authenticated = True
 
     def existing_item_add_url(self, existing_item, endpoint, key="url"):
