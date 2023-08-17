@@ -38,7 +38,7 @@ jobs:
         run: sudo apt -y update
 
       - name: Install docker-compose
-        run: pip3 install --upgrade docker-compose
+        run: sudo apt-get install docker-compose-plugin
 
       - name: collect system info
         run: whoami; id; pwd; ls -al; uname -a ; df -h .; mount ; cat /etc/issue; docker --version ; ps aux | fgrep -i docker; ls -al /var/run/containerd/containerd.sock
@@ -49,11 +49,11 @@ jobs:
 
       - name: Pull Images
         working-directory: eda-server/tools/docker
-        run: docker-compose -p eda -f docker-compose-stage.yaml pull
+        run: docker compose -p eda -f docker-compose-stage.yaml pull
 
       - name: Start stack
         working-directory: eda-server/tools/docker
-        run: docker-compose -p eda -f docker-compose-stage.yaml up -d --wait
+        run: docker compose -p eda -f docker-compose-stage.yaml up -d --wait
 
       - name: Curl the endpoint
         run: http://localhost:8080/eda/
