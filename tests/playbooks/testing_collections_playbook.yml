@@ -20,7 +20,13 @@
         mode: '0755'
 
   tasks:
-    - name: Debug
-      ansible.builtin.debug:
-        msg: A change has been made
+    - name: Verify EDA Controller is up
+      ansible.builtin.uri:
+        validate_certs: false
+        url: "{{ eda_hostname }}/eda"
+        url_username: "{{ eda_username }}"
+        url_password: "{{ eda_password }}"
+        status_code:
+          - 200
+        force_basic_auth: true
 ...

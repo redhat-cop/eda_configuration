@@ -55,9 +55,6 @@ jobs:
         working-directory: eda-server/tools/docker
         run: docker compose -p eda -f docker-compose-stage.yaml up -d --wait
 
-      - name: Curl the endpoint
-        run: http://localhost:8080/eda/
-
       - name: Move ansible.cfg to root
         run: mv .github/files/ansible.cfg .
 
