@@ -19,6 +19,7 @@ skip_list:
   - fqcn[keyword]
   - role-name[path]
   - var-naming[no-role-prefix]
+  - galaxy[version-incorrect]  # Added because it doesn't like pre-v1.0.0 versions
 warn_list:
   - jinja[invalid]  # Temporarily adding this due to https://github.com/ansible/ansible-lint/issues/3048
 kinds:

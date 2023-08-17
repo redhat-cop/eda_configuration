@@ -47,16 +47,13 @@ jobs:
 
       # We should also consider setting EDA_IMAGE_URL and EDA_UI_IMAGE_URL from the eda_server_version once images are properly tagged. We may not need to pull a different version of the repo but instead just point at a different image.
 
-      - name: build stack
+      - name: Pull Images
         working-directory: eda-server/tools/docker
         run: docker-compose -p eda -f docker-compose-stage.yaml pull
 
-      - name: run migrations
+      - name: Start stack
         working-directory: eda-server/tools/docker
-        run: docker-compose -p eda -f docker-compose-stage.yaml up -d
-
-      - name: give stack some time to spin up
-        run: sleep 120
+        run: docker-compose -p eda -f docker-compose-stage.yaml up -d --wait
 
       - name: Curl the endpoint
         run: http://localhost:8080/eda/

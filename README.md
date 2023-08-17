@@ -13,6 +13,7 @@ At present this collection is a work in progress and modules and roles will be a
 The work which will be done will be tracked in the issues. Feel free to add questions or feature requests there which can be answered or resolved once we begin work on this collection.
 
 If you're interested in assisting with this collection please reach out to the maintainers.
+
 ## Links to Ansible Automation Platform Collections
 
 |                                      Collection Name                                         |                 Purpose                  |
@@ -58,7 +59,7 @@ You can make use of this collection by directly invoking the roles or modules us
 
 In a playbook this might look like:
 
-```
+```yaml
 - name: Call Project role
   hosts: localhost
   roles:
@@ -67,7 +68,7 @@ In a playbook this might look like:
 
 or
 
-```
+```yaml
 - name: Call Project role
   hosts: localhost
   tasks:
