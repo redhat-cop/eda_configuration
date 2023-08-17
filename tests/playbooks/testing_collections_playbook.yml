@@ -1,0 +1,26 @@
+---
+- name: Testing EDA Server
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - infra.eda_configuration
+  pre_tasks:
+    - name: Include vars from ah_configs directory
+      ansible.builtin.include_vars:
+        dir: ./eda_configs
+        extensions: ["yml"]
+      tags:
+        - always
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ eda_configuration_working_dir }}"
+        state: directory
+        mode: '0755'
+
+  tasks:
+    - name: Debug
+      ansible.builtin.debug:
+        msg: A change has been made
+...
