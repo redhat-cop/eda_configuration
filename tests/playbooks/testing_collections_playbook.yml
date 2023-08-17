@@ -13,12 +13,6 @@
       tags:
         - always
 
-    - name: Create a directory if it does not exist
-      ansible.builtin.file:
-        path: "{{ eda_configuration_working_dir }}"
-        state: directory
-        mode: '0755'
-
   tasks:
     - name: Verify EDA Controller is up
       ansible.builtin.uri:
