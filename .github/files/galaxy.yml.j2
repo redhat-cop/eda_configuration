@@ -9,12 +9,12 @@ description: Ansible content that interacts with the Ansible EDA Controller.
 documentation: https://github.com/redhat-cop/eda_configuration/blob/devel/README.md
 license:
   - GPL-3.0-only
-namespace: infra
-name: eda_configuration
-version: 0.1.0-devel
+namespace: {{ collection_namespace }}
+name: {{ collection_name }}
+version: {{ collection_version }}
 readme: README.md
-repository: https://github.com/redhat-cop/eda_configuration
-issues: https://github.com/redhat-cop/eda_configuration/issues
+repository: {{ collection_repo }}
+issues: {{ collection_repo }}/issues
 tags:
   - cloud
   - infrastructure
