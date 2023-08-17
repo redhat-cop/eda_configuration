@@ -53,10 +53,10 @@ jobs:
 
       - name: run migrations
         working-directory: eda-server/tools/docker
-        run: docker-compose -p eda -f docker-compose-stage.yaml up
+        run: docker-compose -p eda -f docker-compose-stage.yaml up -d
 
       - name: give stack some time to spin up
-        run: sleep 240
+        run: sleep 120
 
       - name: Curl the endpoint
         run: http://localhost:8080/eda/
