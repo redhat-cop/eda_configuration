@@ -38,7 +38,7 @@ jobs:
         run: sudo apt -y update
 
       - name: Install docker-compose
-        run: sudo apt-get install docker-compose-plugin
+        run: curl -SL https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
 
       - name: collect system info
         run: whoami; id; pwd; ls -al; uname -a ; df -h .; mount ; cat /etc/issue; docker --version ; ps aux | fgrep -i docker; ls -al /var/run/containerd/containerd.sock
