@@ -24,7 +24,7 @@
           - 200
         force_basic_auth: true
 
-    - name: Create project 
+    - name: Create project
       ansible.builtin.include_role:
         name: project
 ...

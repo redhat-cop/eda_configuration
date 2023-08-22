@@ -18,7 +18,6 @@ import re
 from json import loads, dumps
 import base64
 import os
-import email.mime.multipart
 
 
 class ItemNotDefined(Exception):
@@ -546,7 +545,7 @@ class EDAModule(AnsibleModule):
         auto_exit=True,
         associations=None,
         require_id=True,
-        fixed_url=None,  
+        fixed_url=None,
         key="url",
     ):
         # This will exit from the module on its own
@@ -563,7 +562,7 @@ class EDAModule(AnsibleModule):
                 item_url = fixed_url or existing_item[key]
                 item_type = existing_item["type"]
                 item_name = existing_item["name"]
-                item_id = require_id and existing_item["id"]      
+                item_id = require_id and existing_item["id"]
             except KeyError as ke:
                 self.fail_json(msg="Unable to process update of item due to missing data {0}".format(ke))
 
