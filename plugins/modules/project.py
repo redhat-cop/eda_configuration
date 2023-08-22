@@ -117,8 +117,9 @@ def main():
         if field_val is not None:
             new_fields[field_name] = field_val
 
-    new_fields["credential_id"] = module.resolve_name_to_id("credentials", module.params.get("credential"))
-
+    if module.params.get("credential") is not None:
+        new_fields["credential_id"] = module.resolve_name_to_id("credentials", module.params.get("credential"))
+ 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
         existing_item,
