@@ -7,23 +7,18 @@ from ansible.module_utils.urls import (
     Request,
     SSLValidationError,
     ConnectionError,
-    fetch_file,
 )
-from ansible.module_utils.six import string_types
-from ansible.module_utils.six import PY2, PY3
+from ansible.module_utils.six import PY2
 from ansible.module_utils.six.moves.urllib.parse import urlparse, urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.http_cookiejar import CookieJar
-from ansible.module_utils._text import to_bytes, to_native, to_text
 import os.path
 from socket import gethostbyname
 import re
 from json import loads, dumps
 import base64
 import os
-import time
 import email.mime.multipart
-import email.mime.application
 
 
 class ItemNotDefined(Exception):

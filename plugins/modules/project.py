@@ -91,7 +91,7 @@ def main():
     # Create a module for ourselves
     module = EDAModule(argument_spec=argument_spec)
 
-     # Extract our parameters
+    # Extract our parameters
     name = module.params.get("name")
     new_name = module.params.get("new_name")
     state = module.params.get("state")
