@@ -19,7 +19,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: credential
-author: "Derek Waters (dwaters@redhat.com)"
+author: "Derek Waters (@derekwaters)"
 short_description: Manage a Credential in EDA Controller
 description:
     - Create, update and delete credentials in EDA Controller
