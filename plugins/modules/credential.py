@@ -90,7 +90,7 @@ def main():
         new_name=dict(),
         description=dict(),
         username=dict(required=True),
-        secret=dict(required=True),
+        secret=dict(required=True, no_log=True),
         credential_type=dict(choices=["GitHub Personal Access Token",
                                       "GitLab Personal Access Token",
                                       "Container Registry"],
@@ -122,6 +122,8 @@ def main():
     for field_name in (
         "description",
         "credential_type",
+        "username",
+        "secret",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:

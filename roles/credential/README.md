@@ -25,7 +25,7 @@ eda_configuration_credential_secure_logging defaults to the value of eda_configu
 
 |Variable Name|Default Value|Required|Description|
 |:---:|:---:|:---:|:---:|
-|`eda_configuration_credential_secure_logging`|`False`|no|Whether or not to include the sensitive credential role tasks in the log.  Set this value to `True` if you will be providing your sensitive values from elsewhere.|
+|`eda_configuration_credential_secure_logging`|`True`|no|Whether or not to include the sensitive credential role tasks in the log.  Set this value to `True` if you will be providing your sensitive values from elsewhere.|
 |`eda_configuration_secure_logging`|`False`|no|This variable enables secure logging as well, but is shared across multiple roles, see above.|
 
 ### Asynchronous Retry Variables
