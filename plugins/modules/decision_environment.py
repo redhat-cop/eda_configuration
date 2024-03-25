@@ -19,7 +19,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: decision_environment
-author: "Derek Waters (dwaters@redhat.com)"
+author: "Derek Waters (@derekwaters)"
 short_description: Manage a Decision Environment in EDA Controller
 description:
     - Create, update and delete decision environments in EDA Controller
