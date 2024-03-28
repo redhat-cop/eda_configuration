@@ -121,7 +121,7 @@ def main():
     )
 
     # Create a module for ourselves
-    module = EDAModule(argument_spec=argument_spec, required_if=[("state", "present",("rulebook", "decision_environment"))])
+    module = EDAModule(argument_spec=argument_spec, required_if=[("state", "present", ("rulebook", "decision_environment"))])
 
     # Extract our parameters
     name = module.params.get("name")
@@ -162,7 +162,10 @@ def main():
 
     if (module.params.get("project") is not None) and (module.params.get("rulebook") is not None):
         new_fields["project_id"] = module.resolve_name_to_id("projects", module.params.get("project"))
-        new_fields["rulebook_id"] = module.resolve_name_to_id("rulebooks", module.params.get("rulebook"), **{"data": {"project_id": int(new_fields["project_id"])}})
+        new_fields["rulebook_id"] = module.resolve_name_to_id("rulebooks",
+                                                              module.params.get("rulebook"),
+                                                              data={"project_id": int(new_fields["project_id"])},
+                                                              )
     else:
         new_fields["rulebook_id"] = module.resolve_name_to_id("rulebooks", module.params.get("rulebook"))
 
@@ -180,7 +183,11 @@ def main():
                 if json.dumps(module.params.get("extra_vars")) == existing_vars["extra_var"]:
                     new_fields["extra_var_id"] = existing_item["extra_var_id"]
         else:
-            new_fields["extra_var_id"] = module.create_no_name({"extra_var": json.dumps(module.params.get("extra_vars"))}, endpoint="extra-vars", item_type="extra_vars")["id"]
+            new_fields["extra_var_id"] = module.create_no_name(
+                {"extra_var": json.dumps(module.params.get("extra_vars"))},
+                endpoint="extra-vars",
+                item_type="extra_vars"
+            )["id"]
 
     if existing_item is not None:
         # If the activation already exists, all we can do is change whether it is enabled or disabled.

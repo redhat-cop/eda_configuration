@@ -569,8 +569,6 @@ class EDAModule(AnsibleModule):
         if not endpoint:
             self.fail_json(msg="Unable to create new {0} due to missing endpoint".format(item_type))
 
-        item_url = None
-
         # We have to rely on item_type being passed in since we don't have an existing item that declares its type
         # We will pull the item_name out from the new_item, if it exists
 
@@ -580,11 +578,11 @@ class EDAModule(AnsibleModule):
             self.json_output["changed"] = True
         else:
             if "json" in response and "__all__" in response["json"]:
-                self.fail_json(msg="Unable to create {0} {1}: {2}".format(item_type, item_name, response["json"]["__all__"][0]))
+                self.fail_json(msg="Unable to create {0}: {1}".format(item_type, response["json"]["__all__"][0]))
             elif "json" in response:
-                self.fail_json(msg="Unable to create {0} {1}: {2}".format(item_type, item_name, response["json"]))
+                self.fail_json(msg="Unable to create {0}: {1}".format(item_type, response["json"]))
             else:
-                self.fail_json(msg="Unable to create {0} {1}: {2}".format(item_type, item_name, response["status_code"]))
+                self.fail_json(msg="Unable to create {0}: {1}".format(item_type, response["status_code"]))
 
         # If we have an on_create method and we actually changed something we can call on_create
         if on_create is not None and self.json_output["changed"]:
@@ -761,8 +759,8 @@ class EDAModule(AnsibleModule):
     def get_exactly_one(self, endpoint, name_or_id=None, **kwargs):
         return self.get_one(endpoint, name_or_id=name_or_id, allow_none=False, **kwargs)
 
-    def resolve_name_to_id(self, endpoint, name_or_id, **kwargs):
-        return self.get_exactly_one(endpoint, name_or_id, **kwargs)["id"]
+    def resolve_name_to_id(self, endpoint, name_or_id, data):
+        return self.get_exactly_one(endpoint, name_or_id, **{"data": data})["id"]
 
     def objects_could_be_different(self, old, new, field_set=None, warning=False):
         if field_set is None:
@@ -812,7 +810,7 @@ class EDAModule(AnsibleModule):
     ):
 
         if not endpoint:
-            self.fail_json(msg="Unable to trigger action due to missing endpoint".format(item_type))
+            self.fail_json(msg="Unable to trigger action due to missing endpoint")
 
         response = self.post_endpoint(endpoint, **{"data": data})
 
