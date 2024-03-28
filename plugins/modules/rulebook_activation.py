@@ -69,7 +69,7 @@ options:
     state:
       description:
         - Desired state of the resource.
-      choices: ["present", "absent"]
+      choices: ["present", "absent", "restarted"]
       default: "present"
       type: str
 
@@ -90,6 +90,16 @@ EXAMPLES = """
       repo_url: https://github.com/ansible/ansible-rulebook.git
     enabled: true
     state: present
+
+- name: Restart eda rulebook activation
+  infra.eda_configuration.rulebook_activation:
+    name: Github Hook
+    state: restarted
+
+- name: Delete eda rulebook activation
+  infra.eda_configuration.rulebook_activation:
+    name: Github Hook
+    state: absent
 """
 
 from ..module_utils.eda_module import EDAModule
@@ -107,11 +117,11 @@ def main():
         restart_policy=dict(choices=["always", "never", "on_failure"], default="always"),
         extra_vars=dict(type="dict"),
         enabled=dict(type="bool", default="true"),
-        state=dict(choices=["present", "absent"], default="present"),
+        state=dict(choices=["present", "absent", "restarted"], default="present"),
     )
 
     # Create a module for ourselves
-    module = EDAModule(argument_spec=argument_spec)
+    module = EDAModule(argument_spec=argument_spec, required_if=[("state", "present",("rulebook", "decision_environment"))])
 
     # Extract our parameters
     name = module.params.get("name")
@@ -125,6 +135,15 @@ def main():
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
         module.delete_if_needed(existing_item, key="req_url")
+
+    if state == "restarted":
+        if module.params.get("enabled") is not None and not module.params.get("enabled"):
+            module.fail_json(msg="It is not possible to restart a disabled rulebook activation. Ensure it is set to enabled.")
+        # If the options want the activation enabled but it currently isn't then just run through as though enabling as that performs the restart
+        if existing_item["is_enabled"]:
+            # If the state was restarted we will hit the restart endpoint, the module will handle exiting from this
+            # If the item doesn't exist we will just create it anyway
+            module.trigger_post_action("activations/{id}/restart".format(id=existing_item["id"]), auto_exit=True)
 
     # Create the data that gets sent for create and update
     # Remove these two comments for final
