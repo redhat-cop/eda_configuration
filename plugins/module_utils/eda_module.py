@@ -796,21 +796,36 @@ class EDAModule(AnsibleModule):
 
         # If the state was present and we can let the module build or update the existing item, this will return on its own
         response = self.post_endpoint('projects/{id}/sync'.format(id=id))
-        task_id = response["json"]["import_task_id"]
-        self.json_output["task"] = task_id
 
-        if wait:
-            status = None
-            start = time.time()
-            elapsed = 0
-            while status != "finished" and status != "failed":
-                status = self.get_endpoint("tasks/{id}".format(id=task_id))["json"]["status"]
-                time.sleep(interval)
-                elapsed = time.time() - start
-                if timeout and elapsed > timeout:
-                    self.fail_json(msg="Timed out awaiting task completion.", task=task_id)
-            if status == "failed":
-                self.fail_json(msg="The project sync failed", task=task_id)
+        if response["status_code"] == 202:
+            if not (response["json"] and response["json"]["import_task_id"]):
+                self.fail_json(msg="Unable to track sync task as import_task_id not returned from API. Got {0}".format(response["json"]))
+            task_id = response["json"]["import_task_id"]
+            self.json_output["task"] = task_id
+
+            if wait:
+                status = None
+                start = time.time()
+                elapsed = 0
+                while status != "finished" and status != "failed":
+                    status = self.get_endpoint("tasks/{id}".format(id=task_id))["json"]["status"]
+                    time.sleep(interval)
+                    elapsed = time.time() - start
+                    if timeout and elapsed > timeout:
+                        self.fail_json(msg="Timed out awaiting task completion.", task=task_id)
+                if status == "failed":
+                    self.fail_json(msg="The project sync failed", task=task_id)
+        else:
+            if "json" in response and "__all__" in response["json"]:
+                self.fail_json(msg="Unable to sync project: {0}".format(response["json"]["__all__"][0]))
+            elif "json" in response:
+                # This is from a project delete (if there is an active job against it)
+                if "error" in response["json"]:
+                    self.fail_json(msg="Unable to sync project: {0}".format(response["json"]["error"]))
+                else:
+                    self.fail_json(msg="Unable to sync project: {0}".format(response["json"]))
+            else:
+                self.fail_json(msg="Unable to sync project: {0}".format(response["status_code"]))
 
         self.json_output["changed"] = True
         self.exit_json(**self.json_output)
