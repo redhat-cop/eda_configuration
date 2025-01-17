@@ -7,13 +7,8 @@
 
 This Ansible collection allows for easy interaction with an EDA Controller server via Ansible playbooks.
 
-## Work In Progress
-
-At present this collection is a work in progress and modules and roles will be added when available.
-
-The work which will be done will be tracked in the issues. Feel free to add questions or feature requests there which can be answered or resolved once we begin work on this collection.
-
-If you're interested in assisting with this collection please reach out to the maintainers.
+## Deprecation warning!!!!!!!
+This collection only supports EDA/AAP 2.4. For AAP 2.5+ take a look at our [new collection](https://github.com/redhat-cop/infra.aap_configuration) that allows you to manage your whole AAP configuration in one place. We will try and continue supporting this collection until AAP 2.4 support ends (currently set for 12/31/2025)[lifecycle](https://access.redhat.com/support/policy/updates/ansible-automation-platform).
 
 ## Links to Ansible Automation Platform Collections
 
