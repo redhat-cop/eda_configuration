@@ -8,9 +8,13 @@ on:
   schedule:
     - cron: "0 5 * * *"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   pre-commit:
-    uses: "redhat-cop/ansible_collections_tooling/.github/workflows/update_precommit.yml@main"
+    uses: "redhat-cop/ansible_collections_tooling/.github/workflows/update_precommit.yml@634342818b5d5fa2fa92b2c68c78a2bbe8aa4f10"
     with:
       github_actor: ${{ github.actor }}
     secrets:

@@ -17,23 +17,26 @@ on:
 env:
   EDA_IMAGE: quay.io/ansible/eda-server:sha-${{ inputs.eda_server_version }}  # If we transfer back to branches/tags then this needs updating to match the branch
 
+permissions:
+  contents: read
+
 jobs:
 
   integration:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           ref: ${{ inputs.gh_ref }}
 
       - name: "Checkout eda-server"
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           repository: ansible/eda-server
           path: eda-server
           ref: ${{ inputs.eda_server_version }}
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2
         with:
           python-version: "3.8"
 
@@ -68,7 +71,7 @@ jobs:
 
       - name: Build and install the collection
         id: build
-        uses: redhat-cop/ansible_collections_tooling/actions/build_ansible_collection@main
+        uses: redhat-cop/ansible_collections_tooling/actions/build_ansible_collection@634342818b5d5fa2fa92b2c68c78a2bbe8aa4f10 # main
         with:
           collection_namespace: infra
           collection_name: eda_configuration
