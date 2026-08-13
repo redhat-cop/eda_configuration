@@ -8,7 +8,9 @@ from ansible.module_utils.urls import (
     SSLValidationError,
     ConnectionError,
 )
-from ansible.module_utils.six import PY2
+import sys
+
+PY2 = sys.version_info[0] == 2
 from ansible.module_utils.six.moves.urllib.parse import urlparse, urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.http_cookiejar import CookieJar
@@ -392,15 +394,15 @@ class EDAModule(AnsibleModule):
         #   2. The response from EDA Controller from calling the delete on the endpont. It's up to you to process the response and exit from the module
         # Note: common error codes from the EDA Controller API can cause the module to fail
         if existing_item:
+            item_type = existing_item.get("type", "unknown")
+            item_name = self.get_item_name(existing_item, allow_unknown=True)
+            item_id = existing_item.get("id")
             if existing_item["type"] == "token":
                 response = self.delete_endpoint(existing_item["endpoint"])
             else:
                 # If we have an item, we can try to delete it
                 try:
                     item_url = existing_item[key]
-                    item_type = existing_item["type"]
-                    item_id = existing_item["id"]
-                    item_name = self.get_item_name(existing_item, allow_unknown=True)
                 except KeyError as ke:
                     self.fail_json(msg="Unable to process delete of item due to missing data {0}".format(ke))
                 response = self.delete_endpoint(item_url)

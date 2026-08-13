@@ -8,9 +8,12 @@ on:
     types:
       - published
 
+permissions:
+  contents: write
+
 jobs:
   release:
-    uses: "redhat-cop/ansible_collections_tooling/.github/workflows/release_pipeline_single.yml@main"
+    uses: "redhat-cop/ansible_collections_tooling/.github/workflows/release_pipeline_single.yml@634342818b5d5fa2fa92b2c68c78a2bbe8aa4f10"
     with:
       collection_namespace: infra
       collection_name: eda_configuration

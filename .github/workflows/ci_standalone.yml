@@ -2,8 +2,19 @@
 name: Test roles and modules
 on: [push, pull_request_target]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
+  approve_run:
+    environment: requires-approval
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Approval granted. Proceeding to reusable workflow."
+
   ci_standalone:
+    needs: approve_run
     strategy:
       fail-fast: false
       matrix:
