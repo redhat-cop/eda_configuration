@@ -1,4 +1,4 @@
-# infra.eda_configuration.user_token
+# infra.eda_configuration.controller_token
 
 ## Description
 
@@ -15,7 +15,7 @@ Note that tokens cannot be updated, only created.
 |`eda_validate_certs`|`False`|no|Whether or not to validate the Ansible EDA Controller Server's SSL certificate.||
 |`eda_request_timeout`|`10`|no|Specify the timeout Ansible should use in requests to the EDA Controller host.||
 |`eda_configuration_async_dir`|`null`|no|Sets the directory to write the results file for async tasks. The default value is set to `null` which uses the Ansible Default of `/root/.ansible_async/`.||
-|`eda_user_tokens`|`see below`|yes|Data structure describing your user tokens, described below.||
+|`eda_controller_tokens`|`see below`|yes|Data structure describing your user tokens, described below.||
 
 ### Secure Logging Variables
 
@@ -50,7 +50,6 @@ This also speeds up the overall role.
 |Variable Name|Default Value|Required|Type|Description|
 |:---:|:---:|:---:|:---:|:---:|
 |`name`|""|yes|str|User Token name. Must be lower case containing only alphanumeric characters and underscores.|
-|`new_name`|""|no|str|Setting this option will change the existing name (looked up via the name field.)|
 |`description`|""|no|str|Description to use for the Project.|
 |`token`|""|yes|str|The value of the token to associate with the user.|
 
@@ -60,7 +59,7 @@ This also speeds up the overall role.
 
 ```yaml
 ---
-eda_user_tokens:
+eda_controller_tokens:
   - name: my_default_token
     description: my default user token
     token: TOKEN_VALUE
@@ -79,7 +78,7 @@ eda_user_tokens:
   vars:
     eda_validate_certs: false
   # Define following vars here, or in eda_configs/eda_auth.yml
-  # eda_host: ansible-eda-web-svc-test-project.example.com
+  # controller_host: ansible-eda-web-svc-test-project.example.com
   # eda_token: changeme
   pre_tasks:
     - name: Include vars from eda_configs directory
@@ -89,7 +88,7 @@ eda_user_tokens:
       tags:
         - always
   roles:
-    - ../../user_token
+    - infra.eda_configuration.controller_token
 ```
 
 ## License
